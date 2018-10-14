@@ -3,6 +3,19 @@ import sys, traceback
 import pygame, random
 from pygame.locals import *
 
+def finalizar_jogo(parametro1, parametro2, andar, musicaFim):
+    if((parametro1 <= 10) or (parametro1 >= 480) or (parametro2 <= 30) or (parametro2 >= 430)):
+        #pygame.mixer.music.load("sons/fim.mp3")
+        #pygame.mixer.music.play()
+        #del cobrinha[0]
+        andar = False
+        if musicaFim:
+            pygame.mixer.music.load("sons/fim.wav")
+            pygame.mixer.music.play()
+            musicaFim = False
+        #som de derrota e retornar para o menu
+        return False    
+    return True
 def cria_campo():
     contaCampo = 30
     while(1==1):
@@ -82,9 +95,12 @@ pygame.mixer.music.play()
 
 vou_para = ESQUERDA
 
-tempo = pygame.time.Clock()
+musicaFim = True
 
 andar = True
+
+tempo = pygame.time.Clock()
+
 while True:
     tempo.tick(10)
     for evento in pygame.event.get():
@@ -108,7 +124,6 @@ while True:
             cobrinha.append((0,0))
             pontuacao += 10
             texto_pontuacao = texto2.render("pontuacao: "+str(pontuacao), True, (0, 128, 0))
-
             pygame.mixer.music.load("sons/comer.mp3")
             pygame.mixer.music.play()
             pygame.display.update()
@@ -131,19 +146,24 @@ while True:
     cria_campo()
 
     tela.fill((0,0,0))
-    tela.blit(texto_pontuacao, (200, 10))
+    tela.blit(texto_pontuacao, (180, 10))
     for posicaoCampo in campo:
         tela.blit(campoTotal,posicaoCampo)
     tela.blit(comida, posicaoComida)
     for posicaoCobrinha in cobrinha:
         tela.blit(cobrinhaCresce,posicaoCobrinha)
-    if((cobrinha[0][0] <= 10) or (cobrinha[0][0] >= 480) or (cobrinha[1][1] <= 30) or (cobrinha[1][1] >= 430)):
-        #pygame.mixer.music.load("sons/fim.mp3")
-        #pygame.mixer.music.play()
-        #del cobrinha[0]
-        pygame.mixer.music.stop()
-        andar = False
-        tela.blit(textoPerdeu, (120, 150))
-        #som de derrota e retornar para o menu
 
+    try:
+        andar = finalizar_jogo(cobrinha[0][0], cobrinha[1][1], andar, musicaFim)
+    except IndexError:
+        andar = finalizar_jogo(10, 30, False, False)
+
+    musicaFim = andar 
+    tamanho = len(cobrinha)
+
+    if(andar == False and tamanho > 0):
+        del cobrinha[0]
+    elif(tamanho == 0):
+        tela.blit(textoPerdeu, (120, 150))
+    
     pygame.display.update()
